@@ -1,6 +1,11 @@
-var http = require('http')
-var port = process.env.PORT || 1337;
-http.createServer(function(req, res) {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello World\n');
-}).listen(port);
+var config = require('./config.js');
+
+var TelegramBot = require('node-telegram-bot-api');
+var bot = new TelegramBot(config.token, {webHook: true});
+bot.setWebHook(config.botURL + config.token);
+
+bot.onText(/\/start (.+)/, function(message, match) {
+  var fromId = message.from.id;
+  var response = match[1];
+  bot.sendMessage(fromId, response);
+});
