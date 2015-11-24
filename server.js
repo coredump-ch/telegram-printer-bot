@@ -1,7 +1,7 @@
 var config = require('./config.js');
 
 var TelegramBot = require('node-telegram-bot-api');
-var bot = new TelegramBot(config.token, {webHook: true});
+var bot = new TelegramBot(config.token, {polling: true});
 bot.setWebHook(config.botURL + config.token);
 
 bot.onText(/\/start (.+)/, function(message, match) {
