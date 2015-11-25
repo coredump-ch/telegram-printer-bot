@@ -4,7 +4,6 @@ var TelegramBot = require('node-telegram-bot-api');
 var moment = require('moment');
 
 var bot = new TelegramBot(config.token, {polling: true});
-bot.setWebHook(config.botURL + config.token);
 
 var printers = new Map();
 
