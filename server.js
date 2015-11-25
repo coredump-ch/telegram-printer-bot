@@ -15,7 +15,7 @@ bot.onText(/\/start/, function(message, match) {
 
 bot.onText(/\/help/, function(message, match) {
   var chatId = message.chat.id;
-  bot.sendMessage(chatId, 'Sorry, momentan bin ich nicht hilfreich.');
+  bot.sendMessage(chatId, 'Ich verwalte Reservierungen für unseren 3D-Drucker.\n\nUm eine Reservierung zu tätigen: /reservetime\nUm kommende Reservierungen anzuzeigen: /reservations\nUm eine Reservierung zu löschen: Mit /reservetime die Dauer auf 0 setzen.\nFremde Zeiten überschreiben ist möglich – ich bin nicht da, um Konflikte zu lösen.');
 });
 
 bot.onText(/\/reservations$/, function(message) {

@@ -4,6 +4,6 @@
     "node-telegram-bot-api": "^0.17.0"
   },
   "engines": {
-    "node": "5.x"
+    "node": "^5.0"
   }
 }
