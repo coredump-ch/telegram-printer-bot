@@ -2,10 +2,11 @@ var config = require('./config.js');
 
 var TelegramBot = require('node-telegram-bot-api');
 var moment = require('moment');
+var fs = require('fs');
 
 var bot = new TelegramBot(config.token, {polling: true});
 
-var printers = new Map();
+var printers = load();
 
 bot.onText(/^\/start(@CoredumpPrinterBot)?$/, function(message, match) {
   var messageId = message.message_id;
@@ -94,6 +95,7 @@ function addReservation(printerId, fromTime, durationHours, name) {
   });
   
   cleanReservations();
+  save();
 }
 
 function cleanReservations() {
@@ -120,4 +122,26 @@ function checkGroupChat(chat) {
     bot.sendMessage(chat.id, 'Ich funktioniere nur in Gruppenchats, weil ich eine eigene Reservierungsliste für jeden Gruppenchat verwalte.');
   }, 1000);
   return false;
+}
+
+function save() {
+  var data = [];
+  printers.forEach(function(reservations, printerId) {
+    data.push([printerId, [...reservations]]);
+  });
+  var serialization = JSON.stringify(data);
+  fs.writeFile('save.json', serialization);
+}
+
+function load() {
+  try {
+    var serialization = fs.readFileSync('save.json', {encoding: 'utf8'});
+    var printers = new Map(JSON.parse(serialization));
+    printers.forEach(function(reservations, printerId) {
+      printers.set(printerId, new Map(reservations));
+    });
+    return printers;
+  } catch(e) {
+    return new Map();
+  }
 }
