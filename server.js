@@ -6,7 +6,7 @@ var moment = require('moment');
 var bot = new TelegramBot(config.token, {polling: true});
 bot.setWebHook(config.botURL + config.token);
 
-var printers = {};
+var printers = new Map();
 
 bot.onText(/\/start/, function(message, match) {
   var chatId = message.chat.id;
@@ -52,13 +52,30 @@ function getName(user) {
   return firstName + (lastName ? ' ' + lastName : '') + (username ? ' (@' + username + ')' : '');
 }
 
-function addReservation(chatId, fromTime, durationHours, name) {
-  if (!printers[chatId]) {
-  	printers[chatId] = {};
+function addReservation(printerId, fromTime, durationHours, name) {
+  if (!printers.has(printerId)) {
+  	printers.set(printerId, new Map());
   }
   
-  printers[chatId][moment(fromTime).unix()] = {
+  printers.get(printerId).set(moment(fromTime).unix(), {
     durationHours: durationHours,
     name: name
-  };
+  });
+  
+  cleanReservations();
+}
+
+function cleanReservations() {
+  var now = moment().unix();
+  printers.forEach(function(reservations, printerId) {
+    reservations.forEach(function(reservation, fromTime) {
+      if (fromTime + reservation.durationHours * 3600 < now) {
+        reservations.delete(fromTime);
+      }
+    });
+    
+    if (reservations.size === 0) {
+      printers.delete(printerId);
+    }
+  });
 }
