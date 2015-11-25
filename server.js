@@ -18,12 +18,33 @@ bot.onText(/\/help/, function(message, match) {
   bot.sendMessage(chatId, 'Sorry, momentan bin ich nicht hilfreich.');
 });
 
+bot.onText(/\/reservations$/, function(message) {
+  var chatId = message.chat.id;
+  
+  cleanReservations();
+  
+  if (!printers.has(chatId)) {
+    bot.sendMessage(chatId, 'Nächste Reservationen: keine.');
+    return;
+  }
+  
+  var printer = printers.get(chatId);
+  var fromTimes = [...printer.keys()].sort();
+  var message = 'Nächste Reservationen:';
+  fromTimes.forEach(function(fromTime) {
+    var reservation = printer.get(fromTime);
+    message += '\n' + moment.unix(fromTime).format('YYYY-MM-DD H:mm') + ' für ' + reservation.durationHours + ' Stunden von ' + reservation.name;
+  });
+  
+  bot.sendMessage(chatId, message);
+});
+
 bot.onText(/\/reservetime ([^ ]* [^ ]*) (\d{1,2})/, function(message, match) {
   var messageId = message.message_id;
   var chatId = message.chat.id;
   
   var fromTime = match[1];
-  if (!moment(fromTime).isValid()) {
+  if (!moment(Date.parse(fromTime)).isValid()) {
     bot.sendMessage(chatId, 'Ungültiges Datum/Uhrzeit. Bitte Kommando in der Form /reservetime YYYY-MM-DD HH:mm HH angeben, z. B. /reservetime 2017-02-12 18:15 6 um den Drucker am 12. Februar 2017 ab 18:15 Uhr für 6 Stunden zu reservieren.', {'reply_to_message_id': messageId});
     return;
   }
@@ -32,6 +53,7 @@ bot.onText(/\/reservetime ([^ ]* [^ ]*) (\d{1,2})/, function(message, match) {
   var name = getName(message.from);
   addReservation(chatId, fromTime, durationHours, name);
   
+  var fromTimeString = moment(Date.parse(fromTime)).format('YYYY-MM-DD H:mm');
   bot.sendMessage(chatId, name + ' hat den Drucker ab ' + fromTime + ' für ' + durationHours + ' Stunden reserviert.');
 });
 
@@ -57,7 +79,7 @@ function addReservation(printerId, fromTime, durationHours, name) {
   	printers.set(printerId, new Map());
   }
   
-  printers.get(printerId).set(moment(fromTime).unix(), {
+  printers.get(printerId).set(moment(Date.parse(fromTime)).unix(), {
     durationHours: durationHours,
     name: name
   });
@@ -69,7 +91,7 @@ function cleanReservations() {
   var now = moment().unix();
   printers.forEach(function(reservations, printerId) {
     reservations.forEach(function(reservation, fromTime) {
-      if (fromTime + reservation.durationHours * 3600 < now) {
+      if (fromTime + reservation.durationHours * 3600 < now || reservation.durationHours === 0) {
         reservations.delete(fromTime);
       }
     });
