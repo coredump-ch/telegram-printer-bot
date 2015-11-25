@@ -8,17 +8,17 @@ bot.setWebHook(config.botURL + config.token);
 
 var printers = new Map();
 
-bot.onText(/\/start/, function(message, match) {
+bot.onText(/^\/start(@CoredumpPrinterBot)?$/, function(message, match) {
   var chatId = message.chat.id;
   bot.sendMessage(chatId, 'Hey!');
 });
 
-bot.onText(/\/help/, function(message, match) {
+bot.onText(/^\/help(@CoredumpPrinterBot)?$/, function(message, match) {
   var chatId = message.chat.id;
   bot.sendMessage(chatId, 'Ich verwalte Reservierungen für unseren 3D-Drucker.\n\nUm eine Reservierung zu tätigen: /reservetime\nUm kommende Reservierungen anzuzeigen: /reservations\nUm eine Reservierung zu löschen: Mit /reservetime die Dauer auf 0 setzen.\nFremde Zeiten überschreiben ist möglich – ich bin nicht da, um Konflikte zu lösen.');
 });
 
-bot.onText(/\/reservations$/, function(message) {
+bot.onText(/^\/reservations(@CoredumpPrinterBot)?$/, function(message) {
   var chatId = message.chat.id;
   
   cleanReservations();
@@ -39,17 +39,17 @@ bot.onText(/\/reservations$/, function(message) {
   bot.sendMessage(chatId, message);
 });
 
-bot.onText(/\/reservetime ([^ ]* [^ ]*) (\d{1,2})/, function(message, match) {
+bot.onText(/^\/reservetime(@CoredumpPrinterBot)? ([^ ]* [^ ]*) (\d{1,2})/, function(message, match) {
   var messageId = message.message_id;
   var chatId = message.chat.id;
   
-  var fromTime = match[1];
+  var fromTime = match[2];
   if (!moment(Date.parse(fromTime)).isValid()) {
     bot.sendMessage(chatId, 'Ungültiges Datum/Uhrzeit. Bitte Kommando in der Form /reservetime YYYY-MM-DD HH:mm HH angeben, z. B. /reservetime 2017-02-12 18:15 6 um den Drucker am 12. Februar 2017 ab 18:15 Uhr für 6 Stunden zu reservieren.', {'reply_to_message_id': messageId});
     return;
   }
   
-  var durationHours = match[2];
+  var durationHours = match[3];
   var name = getName(message.from);
   addReservation(chatId, fromTime, durationHours, name);
   
@@ -57,11 +57,11 @@ bot.onText(/\/reservetime ([^ ]* [^ ]*) (\d{1,2})/, function(message, match) {
   bot.sendMessage(chatId, name + ' hat den Drucker ab ' + fromTime + ' für ' + durationHours + ' Stunden reserviert.');
 });
 
-bot.onText(/\/reservetime( .*)?$/, function(message, match) {
+bot.onText(/^\/reservetime(@CoredumpPrinterBot)?( .*)?$/, function(message, match) {
   var chatId = message.chat.id;
   var messageId = message.message_id;
   
-  if (!match[1] || !/[^ ]* [^ ]* \d{1,2}/.test(match[1])) {
+  if (!match[2] || !/[^ ]* [^ ]* \d{1,2}/.test(match[2])) {
     bot.sendMessage(chatId, 'Bitte Kommando in der Form /reservetime YYYY-MM-DD HH:mm HH angeben, z. B. /reservetime 2017-02-12 18:15 6 um den Drucker am 12. Februar 2017 ab 18:15 Uhr für 6 Stunden zu reservieren.', {'reply_to_message_id': messageId});
   }
 });
