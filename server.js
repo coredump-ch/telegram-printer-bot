@@ -102,7 +102,7 @@ function cleanReservations() {
   var now = moment().unix();
   printers.forEach(function(reservations, printerId) {
     reservations.forEach(function(reservation, fromTime) {
-      if (fromTime + reservation.durationHours * 3600 < now || reservation.durationHours === 0) {
+      if (fromTime + reservation.durationHours * 3600 < now || reservation.durationHours == 0) {
         reservations.delete(fromTime);
       }
     });
