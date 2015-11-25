@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "moment": "^2.10.6",
     "node-telegram-bot-api": "^0.17.0"
   }
 }
